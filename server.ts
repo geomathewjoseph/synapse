@@ -20,15 +20,22 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()
 // Rate limiting config
 const RATE_LIMIT_DRAW_PER_SEC = parseInt(process.env.RATE_LIMIT_DRAW_PER_SEC || "100", 10);
 
-// Redis Client
+// Redis Client - Upstash requires TLS (rediss://)
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
+const isUpstash = REDIS_URL.includes('upstash.io');
+
 const redis = new Redis(REDIS_URL, {
   maxRetriesPerRequest: 3,
   lazyConnect: true,
+  tls: isUpstash ? { rejectUnauthorized: false } : undefined,
 });
 
 redis.on("error", (err) => {
   console.error("Redis error:", err.message);
+});
+
+redis.on("connect", () => {
+  console.log("Redis connected successfully");
 });
 
 // Try to connect to Redis
