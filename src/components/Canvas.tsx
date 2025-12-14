@@ -82,6 +82,9 @@ export default function Canvas({ roomId }: { roomId: string }) {
             reconnectionAttempts: 10,
             reconnectionDelay: 1000,
             reconnectionDelayMax: 5000,
+            transports: ['websocket', 'polling'],
+            upgrade: true,
+            forceNew: true,
         })
 
         // Connection status handlers
