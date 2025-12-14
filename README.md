@@ -71,7 +71,7 @@ Full-featured drawing canvas with floating toolbar, undo/redo, and live collabor
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/synapse.git
+git clone https://github.com/geomathewjoseph/synapse.git
 cd synapse
 
 # Start with Docker Compose
@@ -248,6 +248,6 @@ MIT License - feel free to use this project for personal or commercial purposes.
 
 **Built with ❤️ using Next.js, Socket.io, and Redis**
 
-[Report Bug](https://github.com/YOUR_USERNAME/synapse/issues) • [Request Feature](https://github.com/YOUR_USERNAME/synapse/issues)
+[Report Bug](https://github.com/geomathewjoseph/synapse/issues) • [Request Feature](https://github.com/geomathewjoseph/synapse/issues)
 
 </div>
