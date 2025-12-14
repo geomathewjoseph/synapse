@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: synapse
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: REDIS_URL
+        sync: false  # Set manually in Render dashboard
