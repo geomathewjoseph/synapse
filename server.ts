@@ -13,21 +13,27 @@ const dev = process.env.NODE_ENV !== "production";
 const hostname = process.env.HOSTNAME || "localhost";
 const port = parseInt(process.env.PORT || "3000", 10);
 
-// CORS Origins (comma-separated in env)
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()) || [
-  "http://localhost:3000",
-  "http://localhost:3001"
-];
+// CORS Origins - Allow all in production for easier deployment
+// In a real production app, you'd want to restrict this
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()) || '*';
 
 // Rate limiting config
 const RATE_LIMIT_DRAW_PER_SEC = parseInt(process.env.RATE_LIMIT_DRAW_PER_SEC || "100", 10);
 
 // Redis Client
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
-const redis = new Redis(REDIS_URL);
+const redis = new Redis(REDIS_URL, {
+  maxRetriesPerRequest: 3,
+  lazyConnect: true,
+});
 
 redis.on("error", (err) => {
-  if (dev) console.error("Redis error:", err);
+  console.error("Redis error:", err.message);
+});
+
+// Try to connect to Redis
+redis.connect().catch((err) => {
+  console.warn("Redis connection failed, continuing without persistence:", err.message);
 });
 
 const app = next({ dev });
@@ -38,9 +44,13 @@ app.prepare().then(() => {
 
   const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
     cors: {
-      origin: dev ? '*' : allowedOrigins,
+      origin: allowedOrigins,
       methods: ["GET", "POST"],
+      credentials: true,
     },
+    transports: ['websocket', 'polling'],
+    pingTimeout: 60000,
+    pingInterval: 25000,
   });
 
   // Rate limiting state: Map<socketId, { count, lastReset }>
