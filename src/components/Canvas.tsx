@@ -77,14 +77,15 @@ export default function Canvas({ roomId }: { roomId: string }) {
 
     useEffect(() => {
         // Connect to the server
+        // Use polling first, then upgrade to websocket for better compatibility with Render
         socket = io({
             reconnection: true,
             reconnectionAttempts: 10,
             reconnectionDelay: 1000,
             reconnectionDelayMax: 5000,
-            transports: ['websocket', 'polling'],
+            transports: ['polling', 'websocket'],  // Start with polling, upgrade to websocket
             upgrade: true,
-            forceNew: true,
+            timeout: 20000,
         })
 
         // Connection status handlers

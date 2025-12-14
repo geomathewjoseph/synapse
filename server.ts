@@ -55,9 +55,10 @@ app.prepare().then(() => {
       methods: ["GET", "POST"],
       credentials: true,
     },
-    transports: ['websocket', 'polling'],
+    transports: ['polling', 'websocket'],  // Polling first for Render compatibility
     pingTimeout: 60000,
     pingInterval: 25000,
+    allowUpgrades: true,
   });
 
   // Rate limiting state: Map<socketId, { count, lastReset }>
