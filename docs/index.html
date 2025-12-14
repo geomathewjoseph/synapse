@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synapse - Real-time Collaboration Whiteboard</title>
+    <meta name="description" content="A high-performance, real-time collaboration whiteboard for creative teams. Built with Next.js, Socket.io, and Redis.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-card: #141414;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --accent: #8b5cf6;
+            --accent-hover: #a78bfa;
+            --border: #27272a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 120px 24px;
+            background: radial-gradient(ellipse at top, #1a1a2e 0%, var(--bg-dark) 70%);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 14px;
+            color: var(--accent);
+            margin-bottom: 32px;
+        }
+
+        .hero h1 {
+            font-size: clamp(48px, 8vw, 80px);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #fff 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 20px;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 48px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 32px;
+            border-radius: 100px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px -10px rgba(139, 92, 246, 0.5);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: white;
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 120px 24px;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .section-title h2 {
+            font-size: 40px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .section-title p {
+            color: var(--text-secondary);
+            font-size: 18px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            transition: all 0.2s ease;
+        }
+
+        .feature-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .feature-card h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+
+        /* Tech Stack */
+        .tech-stack {
+            padding: 80px 24px;
+            background: var(--bg-card);
+        }
+
+        .tech-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: center;
+        }
+
+        .tech-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Quick Start */
+        .quickstart {
+            padding: 120px 24px;
+        }
+
+        .code-block {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            overflow-x: auto;
+            margin-top: 24px;
+        }
+
+        .code-block pre {
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            color: #e4e4e7;
+        }
+
+        .code-block .comment {
+            color: #6b7280;
+        }
+
+        .code-block .command {
+            color: #a78bfa;
+        }
+
+        /* Footer */
+        footer {
+            padding: 48px 24px;
+            text-align: center;
+            border-top: 1px solid var(--border);
+        }
+
+        footer p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Keyboard Shortcuts Table */
+        .shortcuts-table {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 32px;
+        }
+
+        .shortcuts-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .shortcuts-table th,
+        .shortcuts-table td {
+            padding: 16px 24px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .shortcuts-table th {
+            background: rgba(139, 92, 246, 0.1);
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .shortcuts-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .kbd {
+            display: inline-block;
+            padding: 4px 8px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero -->
+    <section class="hero">
+        <div class="badge">
+            <span>⚡</span>
+            <span>Real-time Collaboration</span>
+        </div>
+        <h1>Synapse</h1>
+        <p>A high-performance whiteboard for creative teams. Zero-latency drawing, live cursors, and seamless collaboration.</p>
+        <div class="cta-buttons">
+            <a href="https://github.com/YOUR_USERNAME/synapse" class="btn btn-primary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+                View on GitHub
+            </a>
+            <a href="#quickstart" class="btn btn-secondary">
+                Get Started →
+            </a>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>Everything you need</h2>
+                <p>Powerful features for seamless real-time collaboration</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Drawing Tools</h3>
+                    <p>Pen, eraser, shapes (rectangle, circle, line), customizable colors and line width.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>Real-time Sync</h3>
+                    <p>Instant synchronization across all connected clients. See drawings as they happen.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>Live Cursors</h3>
+                    <p>See other users' cursors with name labels. Know who's drawing where.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Infinite Canvas</h3>
+                    <p>Pan and zoom freely. Fit-to-screen with one click. No boundaries.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💾</div>
+                    <h3>Auto-Persistence</h3>
+                    <p>Drawings are saved automatically. Refresh the page and pick up where you left off.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⌨️</div>
+                    <h3>Keyboard Shortcuts</h3>
+                    <p>Speed up your workflow with intuitive shortcuts. Undo, redo, tool switching.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack -->
+    <section class="tech-stack">
+        <div class="container">
+            <div class="section-title">
+                <h2>Built with Modern Tech</h2>
+                <p>Production-ready stack for performance and scalability</p>
+            </div>
+            <div class="tech-grid">
+                <div class="tech-badge">⚛️ Next.js 16</div>
+                <div class="tech-badge">🔷 TypeScript</div>
+                <div class="tech-badge">🎨 Tailwind CSS</div>
+                <div class="tech-badge">🔌 Socket.io</div>
+                <div class="tech-badge">🗄️ Redis</div>
+                <div class="tech-badge">🐳 Docker</div>
+                <div class="tech-badge">🐻 Zustand</div>
+                <div class="tech-badge">✨ Framer Motion</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Start -->
+    <section class="quickstart" id="quickstart">
+        <div class="container">
+            <div class="section-title">
+                <h2>Quick Start</h2>
+                <p>Get up and running in under 2 minutes</p>
+            </div>
+            
+            <h3 style="margin-top: 48px; margin-bottom: 16px;">🐳 With Docker (Recommended)</h3>
+            <div class="code-block">
+                <pre><span class="comment"># Clone and start</span>
+<span class="command">git clone</span> https://github.com/YOUR_USERNAME/synapse.git
+<span class="command">cd</span> synapse
+<span class="command">docker-compose up -d</span>
+
+<span class="comment"># Open http://localhost:3001</span></pre>
+            </div>
+
+            <h3 style="margin-top: 48px; margin-bottom: 16px;">💻 Local Development</h3>
+            <div class="code-block">
+                <pre><span class="command">npm install</span>
+<span class="command">npm run dev</span>
+
+<span class="comment"># Open http://localhost:3000</span></pre>
+            </div>
+
+            <h3 style="margin-top: 48px; margin-bottom: 16px;">⌨️ Keyboard Shortcuts</h3>
+            <div class="shortcuts-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Key</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><span class="kbd">P</span></td><td>Pen tool</td></tr>
+                        <tr><td><span class="kbd">E</span></td><td>Eraser</td></tr>
+                        <tr><td><span class="kbd">R</span></td><td>Rectangle</td></tr>
+                        <tr><td><span class="kbd">C</span></td><td>Circle</td></tr>
+                        <tr><td><span class="kbd">L</span></td><td>Line</td></tr>
+                        <tr><td><span class="kbd">F</span></td><td>Fit to Screen</td></tr>
+                        <tr><td><span class="kbd">?</span></td><td>Show shortcuts</td></tr>
+                        <tr><td><span class="kbd">Ctrl+Z</span></td><td>Undo</td></tr>
+                        <tr><td><span class="kbd">Ctrl+Y</span></td><td>Redo</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>Built with ❤️ using Next.js, Socket.io, and Redis</p>
+        <p style="margin-top: 8px;">
+            <a href="https://github.com/YOUR_USERNAME/synapse">GitHub</a> •
+            <a href="https://github.com/YOUR_USERNAME/synapse/issues">Report Bug</a> •
+            <a href="https://github.com/YOUR_USERNAME/synapse/issues">Request Feature</a>
+        </p>
+    </footer>
+</body>
+</html>
